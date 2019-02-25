@@ -1,6 +1,6 @@
-# Wine Quality Prediction
+# Quality Prediction
 
-Created by Antonin Bruneau (abruneau@cloudera.com)
+Original code Wine Quality Prediction Created by Antonin Bruneau (abruneau@cloudera.com)
 
 This notebook demonstrates how to create a Gradient-boosted tree classifier 
 to predict wine quality based on characteristics.

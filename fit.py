@@ -3,11 +3,16 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SQLContext
 from pyspark.sql.types import *
 
-conf = SparkConf().setAppName("wine-quality-build-model")
+conf = SparkConf().setAppName("quality-build-model")
 sc = SparkContext(conf=conf)
 sqlContext = SQLContext(sc)
 
+#set path to data
+data_path = "/user/olivier.meignan"
+data_file = "NewGBTDataSet.csv"
+
 # # Get params
+# Declare parameters 
 param_numTrees= int(sys.argv[1])
 param_maxDepth=int(sys.argv[2])
 param_impurity=sys.argv[3]
@@ -19,8 +24,8 @@ cdsw.track_metric("impurity",param_impurity)
 # # Load the data
 # 
 # We need to load data from a file in to a Spark DataFrame.
-# Each row is an wine, and each column contains
-# attributes of that wine.
+# Each row is an mesure, and each column contains
+# attributes of that test.
 #
 #     Fields:
 #     fixedAcidity: numeric
@@ -50,10 +55,10 @@ schema = StructType([StructField("fixedAcidity", DoubleType(), True),
   StructField("Quality", StringType(), True)
 ])
 
-wine_data_raw = sqlContext.read.format('com.databricks.spark.csv').option("delimiter",";").load('/tmp/WineNewGBTDataSet.csv', schema = schema)
+data_raw = sqlContext.read.format('com.databricks.spark.csv').option("delimiter",";").load(data_path+'/'+data_file, schema = schema)
 
 # Remove unvalid data
-wine_data = wine_data_raw.filter(wine_data_raw.Quality != "1")
+valid_data = data_raw.filter(data_raw.Quality != "1")
 
 # # Build a classification model using MLLib
 # 
@@ -90,7 +95,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.classification import RandomForestClassifier
 
-(trainingData, testData) = wine_data.randomSplit([0.7, 0.3])
+(trainingData, testData) = valid_data.randomSplit([0.7, 0.3])
  
 classifier = RandomForestClassifier(labelCol = 'label', featuresCol = 'features', 
                                     numTrees = param_numTrees, 
