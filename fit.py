@@ -8,11 +8,18 @@ sc = SparkContext(conf=conf)
 sqlContext = SQLContext(sc)
 
 #set path to data
-data_path = "/user/olivier.meignan"
+from os import environ, system
+data_path = "/user/" + environ['HADOOP_USER_NAME']
 data_file = "NewGBTDataSet.csv"
+system("rm -rf models")
+system("mkdir models")
+
+
 
 # # Get params
 # Declare parameters 
+import sys
+
 param_numTrees= int(sys.argv[1])
 param_maxDepth=int(sys.argv[2])
 param_impurity=sys.argv[3]
@@ -115,11 +122,8 @@ cdsw.track_metric("aupr", aupr)
 
 model.write().overwrite().save("models/spark")
 
-!rm -r -f models/spark
-!rm -r -f models/spark_rf.tar
-!mkdir models
-!hdfs dfs -get ./models/spark models/
-!tar -cvf models/spark_rf.tar models/spark
+system("hdfs dfs -get ./models/spark models/")
+system("tar -cvf models/spark_rf.tar models/spark")
 
 cdsw.track_file("models/spark_rf.tar")
 
